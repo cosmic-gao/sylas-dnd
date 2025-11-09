@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
+    "bind-event-listener": "^3.0.0",
     "vue": "^3.5.22"
   },
   "devDependencies": {

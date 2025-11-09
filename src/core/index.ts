@@ -25,6 +25,47 @@ export function once(
     };
 }
 
+export function getInput(event) {
+    return {
+        altKey: event.altKey,
+        button: event.button,
+        buttons: event.buttons,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        shiftKey: event.shiftKey,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        pageX: event.pageX,
+        pageY: event.pageY,
+    };
+}
+
+function setDropEffectOnEvent({
+    event,
+    current,
+}) {
+    const innerMost = current[0]?.dropEffect;
+    if (innerMost != null && event.dataTransfer) {
+        event.dataTransfer.dropEffect = innerMost;
+    }
+}
+
+export function getStartLocation({ event, dragType, getDropTargetsOver }) {
+    const input = getInput(event);
+
+    const dropTargets = getDropTargetsOver({
+        input,
+        source: dragType.payload,
+        target: event.target,
+        current: [],
+    });
+    return {
+        input,
+        dropTargets,
+    };
+}
+
+
 function copyReverse(array) {
     return array.slice(0).reverse();
 }
@@ -37,6 +78,22 @@ export function addAttribute(
     return () => element.removeAttribute(attribute);
 }
 
+export function makeDispatch({
+    source,
+    initial,
+    dispatchEvent,
+}) {
+    let previous = { dropTargets: [] };
+
+    function safeDispatch(args) {
+        dispatchEvent(args);
+        previous = { dropTargets: args.payload.location.current.dropTargets };
+    }
+
+    const dispatch = {}
+    return dispatch
+}
+
 const globalState = {
     isActive: false,
 };
@@ -47,6 +104,39 @@ function canStart() {
 
 function start({ event, dragType, getDropTargetsOver, dispatchEvent }) {
     if (!canStart()) return;
+
+    const initial = getStartLocation({
+        event,
+        dragType,
+        getDropTargetsOver,
+    });
+
+    globalState.isActive = true;
+
+    const state = {
+        current: initial,
+    };
+
+    setDropEffectOnEvent({ event, current: initial.dropTargets });
+
+    function updateState(next) {
+    }
+
+    function onUpdateEvent(event) {
+    }
+
+    function cancel() {
+    }
+
+    function finish() {
+        globalState.isActive = false;
+        unbindEvents();
+    }
+
+    const unbindEvents = bindAll(
+        window,
+        []
+    )
 }
 
 export const lifecycle = {
@@ -54,7 +144,7 @@ export const lifecycle = {
     start,
 };
 
-export function makeDropTarget(typeKey, defaultDropEffect) {
+export function makeDropTarget({ typeKey, defaultDropEffect }) {
     const registry = new WeakMap();
 
     const dropTargetDataAtt = `data-drop-target-for-${typeKey}`;
@@ -65,16 +155,62 @@ export function makeDropTarget(typeKey, defaultDropEffect) {
         onDrag: notifyCurrent,
         onDragStart: notifyCurrent,
         onDrop: notifyCurrent,
+        onDropTargetChange: ({ payload }) => {
+            const isCurrent = new Set(
+                payload.location.current.dropTargets.map((record) => record.element),
+            );
+
+            const visited = new Set();
+            for (const record of payload.location.previous.dropTargets) {
+                visited.add(record.element);
+                const entry = registry.get(record.element);
+                const isOver = isCurrent.has(record.element);
+
+                const args = {
+                    ...payload,
+                    self: record,
+                };
+                entry?.onDropTargetChange?.(args);
+
+                // if we cannot find the drop target in the current array, then it has been left
+                if (!isOver) {
+                    entry?.onDragLeave?.(args);
+                }
+            }
+            for (const record of payload.location.current.dropTargets) {
+                // already published an update to this drop target
+                if (visited.has(record.element)) {
+                    continue;
+                }
+                // at this point we have a new drop target that is being entered into
+                const args = {
+                    ...payload,
+                    self: record,
+                };
+                const entry = registry.get(record.element);
+                entry?.onDropTargetChange?.(args);
+                entry?.onDragEnter?.(args);
+            }
+        },
     }
 
-    function notifyCurrent({ eventName, payload }) { }
+    function notifyCurrent({ eventName, payload }) {
+        for (const record of payload.location.current.dropTargets) {
+            const entry = registry.get(record.element);
+            const args = {
+                ...payload,
+                self: record,
+            };
+            entry?.[eventName]?.(args);
+        }
+    }
 
     function addToRegistry(args) {
         registry.set(args.element, args);
         return () => registry.delete(args.element);
     }
 
-    const dropTargetForConsumers = () => {
+    const dropTargetForConsumers = (args) => {
         const cleanup = combine(
             addAttribute(args.element, {
                 attribute: dropTargetDataAtt,
@@ -184,3 +320,19 @@ const adapter = makeAdapter({
     typeKey: 'element',
     defaultDropEffect: 'move',
 })
+
+const itemDropTarget = makeDropTarget({
+    typeKey: 'item',
+    defaultDropEffect: 'move',
+});
+
+const cleanup = itemDropTarget.dropTargetForConsumers({
+    element: document.getElementById('drop-zone'),
+    canDrop: ({ source }) => source.type === 'item',
+    onDragEnter: () => highlight(),
+    onDragLeave: () => unhighlight(),
+    onDrop: ({ self, source }) => {
+        console.log('Dropped item:', source, 'on', self.element);
+    },
+
+});
