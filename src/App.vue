@@ -1,107 +1,99 @@
-<script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { dropTargetForExternal } from '@atlaskit/pragmatic-drag-and-drop/external/adapter'
+<script setup>
+import { ref, reactive, onMounted, nextTick } from "vue"
+import {
+  draggable,
+  dropTargetForElements,
+  monitorForElements
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
+import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 
-type DroppedData = {
-  type: 'file' | 'text'
-  name?: string
-  size?: number
-  text?: string
-}
+const items = reactive([
+  { id: "task-1", label: "Organize event" },
+  { id: "task-2", label: "Maintain inventory" },
+  { id: "task-3", label: "Update website" },
+  { id: "task-4", label: "Plan marketing" }
+])
 
-const dropZoneRef = ref<HTMLDivElement | null>(null)
-const isActive = ref(false)
-const data = ref<DroppedData | null>(null)
+// 保存每个元素引用
+const itemRefs = new Map()
 
-let cleanup: (() => void) | null = null
-
+// 核心拖拽逻辑
 onMounted(() => {
-  const element = dropZoneRef.value
-  if (!element) return
-
-  cleanup = dropTargetForExternal({
-    element,
-
-    onDragEnter() {
-      isActive.value = true
+  // 监听全局 drop 行为
+  monitorForElements({
+    canMonitor({ source }) {
+      return !!source.data.itemId
     },
+    onDrop({ source, location }) {
+      const target = location.current.dropTargets[0]
+      if (!target) return
 
-    onDragLeave() {
-      isActive.value = false
-    },
+      const sourceId = source.data.itemId
+      const targetId = target.data.itemId
+      if (sourceId === targetId) return
 
-    async onDrop({ source }:any) {
-      console.log(source, "source")
-      isActive.value = false
+      const from = items.findIndex(i => i.id === sourceId)
+      const to = items.findIndex(i => i.id === targetId)
 
-      // 拖入文件
-      if (source.files && source.files.length > 0) {
-        const file = source.files[0]
-        data.value = {
-          type: 'file',
-          name: file.name,
-          size: file.size,
-        }
-
-        // 如果是文本文件，读取内容
-        if (file.type.startsWith('text/')) {
-          const text = await file.text()
-          data.value.text = text
-        }
-        return
-      }
-
-      // 拖入文本
-      if (source.types.includes('text/plain')) {
-        const text = await source.getText()
-        data.value = {
-          type: 'text',
-          text,
-        }
-        return
-      }
-
-      data.value = {
-        type: 'text',
-        text: '未知内容类型。',
-      }
-    },
+      // 简化：拖到某元素上，就放在它前面
+      const newItems = reorder({ list: [...items], startIndex: from, finishIndex: to })
+      items.splice(0, items.length, ...newItems)
+    }
   })
-})
 
-onBeforeUnmount(() => {
-  if (cleanup) cleanup()
+  // 初始化每个元素为可拖拽/可放置
+  nextTick(() => {
+    for (const item of items) {
+      const el = itemRefs.get(item.id)
+      if (!el) continue
+
+      draggable({
+        element: el,
+        getInitialData: () => ({ itemId: item.id })
+      })
+
+      dropTargetForElements({
+        element: el,
+        getData: () => ({ itemId: item.id })
+      })
+    }
+  })
 })
 </script>
 
 <template>
-  <div
-    ref="dropZoneRef"
-    :style="{
-      border: `3px dashed ${isActive ? '#2196f3' : '#aaa'}`,
-      borderRadius: '12px',
-      padding: '60px',
-      textAlign: 'center',
-      backgroundColor: isActive ? '#e3f2fd' : '#fafafa',
-      transition: 'all 0.2s ease',
-    }"
-  >
-    <h2>拖拽文件或文字到这里 👇</h2>
-
-    <div v-if="data" style="margin-top: 20px; text-align: left;">
-      <strong>接收到的数据：</strong>
-      <pre
-        style="
-          background: #eee;
-          padding: 16px;
-          border-radius: 8px;
-          overflow-x: auto;
-        "
-      >
-{{ JSON.stringify(data, null, 2) }}
-      </pre>
+  <div class="list">
+    <div
+      v-for="item in items"
+      :key="item.id"
+      class="list-item"
+      :ref="el => itemRefs.set(item.id, el)"
+    >
+      {{ item.label }}
     </div>
-
-    <p v-else>支持拖入：文件 / 文本（例如从其他网页选中文字拖动进来）</p>
   </div>
 </template>
+
+<style scoped>
+.list {
+  border: 1px solid #ccc;
+  width: 320px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+.list-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.2s;
+}
+.list-item:hover {
+  background: #f7f7f7;
+}
+.list-item:last-child {
+  border-bottom: none;
+}
+</style>
