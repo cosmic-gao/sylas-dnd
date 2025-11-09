@@ -1,0 +1,14 @@
+{
+    "name": "sylas-dnd",
+    "private": true,
+    "type": "module",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "parcel index.html"
+    },
+    "devDependencies": {
+        "@types/node": "^24.10.0",
+        "parcel": "^2.16.1",
+        "typescript": "^5.9.3"
+    }
+}
