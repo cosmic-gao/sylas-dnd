@@ -3,9 +3,20 @@
  */
 export const POINT_SYMBOL = Symbol('__sylas_dnd_point__');
 
-export type PointLike<T> = Point<T> | AxesPoint<T>;
+export interface DDPointDefinition<T> {
+  x: T;
+  y: T;
+}
 
-export class Point<T = number> {
+export type Axis = "x" | "y";
+
+export type Axes = Axis | "z";
+
+export type DDPointLike<T = number> = DDPoint<T> | DDAxesPoint<T> | DDPointDefinition<T>;
+
+export class DDPoint<T = number> implements DDPointDefinition<T> {
+  public static readonly [POINT_SYMBOL] = true;
+
   public x: T;
   public y: T;
 
@@ -15,15 +26,14 @@ export class Point<T = number> {
   }
 }
 
-export class AxesPoint<T = number> extends Point<T> {
-  public static readonly [POINT_SYMBOL] = true;
+export class DDAxesPoint<T = number> extends DDPoint<T> {
 
   /**
    * 类型保护方法，判断对象是否为 Point 或 AxesPoint
    * @param obj - 待判断对象
    * @returns 如果 obj 是 Point 或 AxesPoint，返回 true
    */
-  public static isPoint<T = number>(obj: unknown): obj is PointLike<T> {
+  public static isPoint<T = number>(obj: unknown): obj is DDPointLike<T> {
     return (
       typeof obj === 'object' &&
       obj !== null &&
@@ -49,7 +59,7 @@ export class AxesPoint<T = number> extends Point<T> {
    * p1.clone(p2);
    * console.log(p1.x, p1.y); // 100, 200
    */
-  public clone(point: PointLike<T>): Point<T> {
+  public clone(point: DDPointLike<T>): DDPoint<T> {
     return this.setCoords(point.x, point.y);
   }
 
@@ -69,7 +79,7 @@ export class AxesPoint<T = number> extends Point<T> {
    * point.setCoords(100, 200).setCoords(150, 250); // 链式调用
    * console.log(point.x, point.y); // 150, 250
    */
-  public setCoords(x: T, y: T): Point<T> {
+  public setCoords(x: T, y: T): DDPoint<T> {
     this.x = x
     this.y = y
 
@@ -90,7 +100,7 @@ export class AxesPoint<T = number> extends Point<T> {
    * const coords = point.getCoords();
    * console.log(coords.x, coords.y); // 100, 200
    */
-  public getCoords(): Point<T> {
+  public getCoords(): DDPoint<T> {
     return { x: this.x, y: this.y }
   }
 
@@ -108,12 +118,21 @@ export class AxesPoint<T = number> extends Point<T> {
    * @returns 是否相等
    */
   public isEqualTo(x: T, y: T): boolean;
-  public isEqualTo(point: Point<T> | AxesPoint<T>): boolean;
-  public isEqualTo(xOrPoint: T | PointLike<T>, y?: T): boolean {
-    if (AxesPoint.isPoint(xOrPoint)) {
+  public isEqualTo(point: DDPoint<T> | DDAxesPoint<T>): boolean;
+  public isEqualTo(xOrPoint: T | DDPointLike<T>, y?: T): boolean {
+    if (DDAxesPoint.isPoint(xOrPoint)) {
       return this.x === xOrPoint.x && this.y === xOrPoint.y;
     }
 
     return this.x === xOrPoint && this.y === y;
+  }
+}
+
+export class DDCoordPoint extends DDAxesPoint<number> {
+  public increase(point: DDPointLike<number>): DDCoordPoint {
+    this.x += point.x;
+    this.y += point.y;
+
+    return this;
   }
 }
