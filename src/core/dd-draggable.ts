@@ -1,7 +1,7 @@
 import { DDCoordPoint } from "./dd-point"
 import { DDElement } from "./dd-element"
 
-export class DDraggable<T extends DDElement> {
+export class DDDraggable<T extends DDElement> {
   public readonly draggedElm: T;
   public readonly draggedDOM: HTMLElement;
 
