@@ -9,8 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
-    "bind-event-listener": "^3.0.0",
     "vue": "^3.5.22"
   },
   "devDependencies": {
@@ -23,8 +21,7 @@
   },
   "pnpm": {
     "overrides": {
-      "vite": "npm:rolldown-vite@7.1.14",
-      "@atlaskit/pragmatic-drag-and-drop": "link:G:/pragmatic-drag-and-drop/packages/core"
+      "vite": "npm:rolldown-vite@7.1.14"
     }
   }
 }
