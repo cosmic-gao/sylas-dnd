@@ -3,40 +3,35 @@
 </template>
 
 <script lang="ts" setup>
-import Generator from "@dflex/dom-gen";
+import {DOMKeygen} from "./core/dom-keygen";
 
 // 初始化管理器
-const domKeysManager = new Generator() as any;
+const domKeysManager = new DOMKeygen();
 
-// 模拟添加一些元素
-const branchKey = domKeysManager.constructBK(true); // 新分支
-const depth = 0;
+const rootBK = domKeysManager.constructBK(true); // dflex_bk_1
+const rootSK = domKeysManager.constructSK(0, 0); // dflex_sk_0_0
+domKeysManager.registerKeys("root", rootSK, rootBK, 0, false);
 
-// 添加第一个元素
-const sk1 = domKeysManager.constructSK(depth, 0);
-domKeysManager.registerKeys("element1", sk1, branchKey, depth, false);
+// Step 2: 注册 section A
+const sectionABK = domKeysManager.constructBK(true); // dflex_bk_2
+const sectionASK = domKeysManager.constructSK(1, 0); // dflex_sk_1_0
+domKeysManager.registerKeys("A", sectionASK, sectionABK, 1, false);
 
-// 添加第二个元素，和第一个同级
-const sk2 = domKeysManager.constructSK(depth, 1);
-domKeysManager.registerKeys("element2", sk2, branchKey, depth, true);
+// Step 3: 注册 A 下的子节点 a1 和 a2
+const a1SK = domKeysManager.constructSK(2, 0); // dflex_sk_2_0
+domKeysManager.registerKeys("a1", a1SK, sectionABK, 2, true); // hasSiblingInSameLevel = true
 
-// 添加子元素
-const childDepth = 1;
-const skChild = domKeysManager.constructSK(childDepth, 0);
-domKeysManager.registerKeys("child1", skChild, branchKey, childDepth, false);
+const a2SK = domKeysManager.constructSK(2, 0); // 同级组 SK 相同
+domKeysManager.registerKeys("a2", a2SK, sectionABK, 2, true);
 
-// 查看所有兄弟键
-console.log(domKeysManager.getSiblingsByKey(sk1)); // ["element1"]
-console.log(domKeysManager.getSiblingsByKey(sk2)); // ["element2"]
+// Step 4: 注册 section B
+const sectionBBK = domKeysManager.constructBK(true); // dflex_bk_3
+const sectionBSK = domKeysManager.constructSK(1, 1); // dflex_sk_1_1
+domKeysManager.registerKeys("B", sectionBSK, sectionBBK, 1, false);
 
-// 查看分支最高深度元素
-console.log(domKeysManager.getTopLevelSKs());
+// Step 5: 注册 B 下的子节点 b1
+const b1SK = domKeysManager.constructSK(2, 1); // dflex_sk_2_1
+domKeysManager.registerKeys("b1", b1SK, sectionBBK, 2, false);
 
-// 删除元素
-domKeysManager.deleteIDFromBranch(branchKey, sk1, depth, "element1");
-console.log(domKeysManager.getSiblingsByKey(sk1)); // []
-
-// 调试内部数据
-console.log(domKeysManager._DEV_getPrivateKeys());
-
+console.log(domKeysManager)
 </script>
