@@ -18,7 +18,8 @@ export interface Node<T> {
   readonly id: NodeId;
 
   parent?: Node<T>;
-  children: Node<T>[];
+  child?: Node<T>;
+  sibling?: Node<T>;
 
   /** 树深度，根节点为 0 */
   depth: Depth;
@@ -32,18 +33,18 @@ export interface Node<T> {
 
 export interface Keygen<T> {
   nodes: Map<NodeId, Node<T>>;
-  levels: Map<SiblingKey, Node<T>[]>;
-  branchs: Map<BranchKey, Node<T>[]>;
+  levels: Map<Depth, NodeId[]>;
+  siblings: Map<SiblingKey, NodeId[]>;
+  branchs: Map<BranchKey, NodeId[]>;
 }
 
 export class DOMKeygen<T> implements Keygen<T> {
   public nodes: Map<NodeId, Node<T>> = new Map();
+  public levels: Map<Depth, NodeId[]> = new Map();
+  public siblings: Map<SiblingKey, NodeId[]> = new Map();
+  public branchs: Map<BranchKey, NodeId[]> = new Map();
 
-  public levels: Map<SiblingKey, Node<T>[]> = new Map();
+  protected getSiblings() { }
 
-  public branchs: Map<BranchKey, Node<T>[]> = new Map();
-
-  public get branchSize(): number {
-    return this.branchs.size
-  }
+  protected getChildren() { }
 }
