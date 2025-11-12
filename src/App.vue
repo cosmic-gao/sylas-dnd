@@ -1,37 +1,98 @@
 <template>
-  <div>12</div>
+  <div class="container" ref="containerRef" @pointerdown="onPointerDown">
+    <div
+      v-for="(item, i) in items"
+      :key="item"
+      :id="`item-${i}`"
+      class="item"
+    >
+      {{ item }}
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import {DOMKeygen} from "./core/dom-keygen";
+import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { store, DnD } from "@dflex/dnd";
 
-// 初始化管理器
-const domKeysManager = new DOMKeygen();
+// 响应式列表数据
+const items = ref(["🍎 Apple", "🍌 Banana", "🍒 Cherry", "🍇 Grape"]);
+const containerRef = ref(null);
+let activeDnD:any = null;
 
-const rootBK = domKeysManager.constructBK(true); // dflex_bk_1
-const rootSK = domKeysManager.constructSK(0, 0); // dflex_sk_0_0
-domKeysManager.registerKeys("root", rootSK, rootBK, 0, false);
+/** 启动拖拽 */
+const onPointerDown = (e:any) => {
+  const item = e.target.closest(".item");
+  if (!item) return;
 
-// Step 2: 注册 section A
-const sectionABK = domKeysManager.constructBK(true); // dflex_bk_2
-const sectionASK = domKeysManager.constructSK(1, 0); // dflex_sk_1_0
-domKeysManager.registerKeys("A", sectionASK, sectionABK, 1, false);
+  activeDnD = new DnD(item.id, { x: e.clientX, y: e.clientY });
 
-// Step 3: 注册 A 下的子节点 a1 和 a2
-const a1SK = domKeysManager.constructSK(2, 0); // dflex_sk_2_0
-domKeysManager.registerKeys("a1", a1SK, sectionABK, 2, true); // hasSiblingInSameLevel = true
+  document.addEventListener("pointermove", onPointerMove);
+  document.addEventListener("pointerup", onPointerUp, { once: true });
+};
 
-const a2SK = domKeysManager.constructSK(2, 0); // 同级组 SK 相同
-domKeysManager.registerKeys("a2", a2SK, sectionABK, 2, true);
+/** 拖拽进行中 */
+const onPointerMove = (e:any) => {
+  if (activeDnD) {
+    activeDnD.dragAt(e.clientX, e.clientY);
+  }
+};
 
-// Step 4: 注册 section B
-const sectionBBK = domKeysManager.constructBK(true); // dflex_bk_3
-const sectionBSK = domKeysManager.constructSK(1, 1); // dflex_sk_1_1
-domKeysManager.registerKeys("B", sectionBSK, sectionBBK, 1, false);
+/** 结束拖拽 */
+const onPointerUp = async () => {
+  if (!activeDnD) return;
 
-// Step 5: 注册 B 下的子节点 b1
-const b1SK = domKeysManager.constructSK(2, 1); // dflex_sk_2_1
-domKeysManager.registerKeys("b1", b1SK, sectionBBK, 2, false);
+  activeDnD.endDragging();
+  store.commit(); // 提交 DOM 顺序变化
 
-console.log(domKeysManager)
+  // 获取容器的最新 DOM 顺序并同步到 Vue 数组
+  const container:any = containerRef.value ;
+  const newOrder = Array.from(container.children).map((el:any) => el.textContent.trim());
+  items.value = newOrder;
+
+  activeDnD = null;
+  document.removeEventListener("pointermove", onPointerMove);
+};
+
+/** 注册所有 DOM 元素 */
+onMounted(async () => {
+  await nextTick(); // 确保 DOM 已渲染
+  const container:any = containerRef.value;
+  Array.from(container.children).forEach((el:any) => {
+    store.register({ id: el.id });
+  });
+  console.log(store, "store")
+});
+
+/** 组件卸载时清理 */
+onBeforeUnmount(() => {
+  const container:any = containerRef.value;
+  if (!container) return;
+  Array.from(container.children).forEach((el:any) => {
+    store.unregister(el.id);
+  });
+});
 </script>
+
+<style scoped>
+.container {
+  width: 300px;
+  margin: 60px auto;
+}
+
+.item {
+  padding: 12px;
+  margin: 8px 0;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+  cursor: grab;
+  transition: transform 0.1s ease, background-color 0.25s;
+}
+
+.item:active {
+  cursor: grabbing;
+  background-color: #e0f7fa;
+}
+</style>
