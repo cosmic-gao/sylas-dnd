@@ -1,6 +1,10 @@
 import { EventBus } from "./event-bus"
 import { DDStore } from "./dd-store"
 
+export interface DDElementNode {
+  
+}
+
 export interface DDElement {
   id: string;
 }
