@@ -7,6 +7,7 @@ settings:
 overrides:
   vite: npm:rolldown-vite@7.1.14
   '@dflex/dnd': link:G:/dflex/packages/dflex-dnd
+  '@dflex/dom-gen': link:G:/dflex/packages/dflex-dom-gen
 
 importers:
 
@@ -15,6 +16,9 @@ importers:
       '@dflex/dnd':
         specifier: link:G:/dflex/packages/dflex-dnd
         version: link:G:/dflex/packages/dflex-dnd
+      '@dflex/dom-gen':
+        specifier: link:G:/dflex/packages/dflex-dom-gen
+        version: link:G:/dflex/packages/dflex-dom-gen
       vue:
         specifier: ^3.5.22
         version: 3.5.24(typescript@5.9.3)

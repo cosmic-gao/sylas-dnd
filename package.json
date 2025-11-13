@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@dflex/dnd": "^3.10.6",
+    "@dflex/dom-gen": "^3.10.6",
     "vue": "^3.5.22"
   },
   "devDependencies": {
@@ -23,7 +24,8 @@
   "pnpm": {
     "overrides": {
       "vite": "npm:rolldown-vite@7.1.14",
-      "@dflex/dnd": "link:G:/dflex/packages/dflex-dnd"
+      "@dflex/dnd": "link:G:/dflex/packages/dflex-dnd",
+      "@dflex/dom-gen": "link:G:/dflex/packages/dflex-dom-gen"
     }
   }
 }
