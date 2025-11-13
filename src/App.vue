@@ -6,54 +6,21 @@
 </template>
 
 <script lang="ts" setup>
-import DFlexBaseStore, { type RegisterInputProcessed } from "@dflex/store";
-import { onMounted } from "vue";
+import { compile } from '@vue/compiler-dom';
 
-class Store extends DFlexBaseStore {
-  register(element: RegisterInputProcessed) {
-    this.addElmToRegistry(element);
+const template = `<div>{{ message }}</div>`;
+
+// 浏览器环境 decodeEntities
+const { code } = compile(template, {
+  mode: 'function', // 或 'module'
+  prefixIdentifiers: false,
+  onError(err) { console.error(err); },
+  decodeEntities: (raw) => {
+    const t = document.createElement('textarea');
+    t.innerHTML = raw;
+    return t.value;
   }
-}
-
-const store = new Store();
-
-const elm0DP0 = {
-  id: "id-0",
-  depth: 0,
-  readonly: false,
-  animation: null,
-  CSSTransform: null,
-};
-
-const elm1DP0 = {
-  id: "id-1",
-  depth: 0,
-  readonly: false,
-  animation: null,
-  CSSTransform: null,
-};
-
-const elm2DP0 = {
-  id: "id-2",
-  depth: 0,
-  readonly: false,
-  animation: null,
-  CSSTransform: null,
-};
-
-const elm0DP1 = {
-  id: "p-id-0",
-  depth: 1,
-  readonly: false,
-  animation: null,
-  CSSTransform: null,
-};
-
-onMounted(()=>{
-  [elm0DP0, elm1DP0, elm2DP0, elm0DP1].forEach((elm) => {
-  store.register(elm);
 });
 
-console.log(store)
-})
+console.log(code);
 </script>
