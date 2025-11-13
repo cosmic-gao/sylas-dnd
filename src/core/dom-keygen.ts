@@ -4,7 +4,9 @@ export type NodeId = string;
 
 export type Depth = number;
 
-export type SiblingKey = `${typeof DOMKeygen.SIBLING_KEY}${string}`;;
+export type ParentKey = `${typeof DOMKeygen.PARENT_KEY}${string}`;
+
+export type SiblingKey = `${typeof DOMKeygen.SIBLING_KEY}${string}`;
 
 export type BranchKey = `${typeof DOMKeygen.BRANCH_KEY}${string}`;
 
@@ -37,6 +39,7 @@ export const remove = <T>(array: T[], item: T): T[] => array.filter(el => el !==
 
 export class DOMKeygen<T> implements KeygenGraph<T> {
   public static readonly BRANCH_KEY = '__sylas_bk__' as const
+  public static readonly PARENT_KEY = '__sylas_pk__' as const
   public static readonly SIBLING_KEY = '__sylas_sk__' as const
 
   public nodes: Map<NodeId, Node<T>> = new Map();
@@ -73,6 +76,10 @@ export class DOMKeygen<T> implements KeygenGraph<T> {
 
   protected createSiblingKey(depth: Depth, siblingIndex: number): SiblingKey {
     return `${DOMKeygen.SIBLING_KEY}${join(depth, siblingIndex)}`;
+  }
+
+  protected createParentKey(depth: Depth): ParentKey {
+    return `${DOMKeygen.PARENT_KEY}${join(depth, this.branchIndex)}`;
   }
 
   private linkSibling(sk: SiblingKey, id: NodeId): number {
