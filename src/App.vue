@@ -6,21 +6,5 @@
 </template>
 
 <script lang="ts" setup>
-import { compile } from '@vue/compiler-dom';
 
-const template = `<div>{{ message }}</div>`;
-
-// 浏览器环境 decodeEntities
-const { code } = compile(template, {
-  mode: 'function', // 或 'module'
-  prefixIdentifiers: false,
-  onError(err) { console.error(err); },
-  decodeEntities: (raw) => {
-    const t = document.createElement('textarea');
-    t.innerHTML = raw;
-    return t.value;
-  }
-});
-
-console.log(code);
 </script>
