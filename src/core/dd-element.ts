@@ -1,7 +1,7 @@
 import { DDCoordPoint } from "./dd-point"
 import { setStyleProperty } from "./dom"
 
-export type DDElementLike = DDElement | DraggableElement | DDElementDefinition;
+export type DDElementLike = DDBaseElement | DDElement | DDElementNode | DDElementDefinition;
 
 export interface DDElementDefinition {
   readonly id: string
@@ -21,13 +21,16 @@ function transform(DOM: HTMLElement, x: number, y: number): void {
   setStyleProperty(DOM, TRANSFORM, matrix);
 }
 
-/**
- * 唯一的 Symbol 标记，用于类型识别 element 实例
- */
 export const ELEMENT_SYMBOL = Symbol('__sylas_dnd_element__');
 
-export class DDElement implements DDElementDefinition {
+export class DDBaseElement implements DDElementDefinition {
   public static readonly [ELEMENT_SYMBOL] = true;
+
+  public static isElement(input: unknown): input is DDBaseElement {
+    if (!input || typeof input !== 'object') return false;
+    const ctor = (input as { constructor?: { readonly [ELEMENT_SYMBOL]?: true } }).constructor;
+    return !!ctor?.[ELEMENT_SYMBOL];
+  }
 
   public static transform = transform;
 
@@ -41,6 +44,10 @@ export class DDElement implements DDElementDefinition {
   }
 }
 
-export class DraggableElement extends DDElement {
+export class DDElement extends DDBaseElement {
+
+}
+
+export class DDElementNode extends DDElement {
 
 }

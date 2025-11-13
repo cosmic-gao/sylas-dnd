@@ -8,6 +8,7 @@ import Generator from "@dflex/dom-gen"
 const domGen = new Generator()
  domGen.register('id1', 0, false)
  domGen.register('id3', 0, false)
+ domGen.register('id2', 1, false)
  domGen.register('id2', 0, false)
 
 console.log(domGen)

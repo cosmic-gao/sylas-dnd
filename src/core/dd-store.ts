@@ -1,6 +1,7 @@
+import { DDElementNode } from "./dd-element"
 import { DDManager } from "./dd-manager";
 
-export class DDStore<T extends { keys: { SK: string } } = any> extends DDManager<T> {
+export class DDStore<T extends DDElementNode> extends DDManager<T> {
 
   public constructor() {
     super()

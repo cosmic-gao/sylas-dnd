@@ -1,12 +1,14 @@
+import { DDElementNode } from "./dd-element"
+
 /**
- * DDManager 用于管理框架中的逻辑元素与对应的 DOM 节点。
+ * DOMManager 用于管理框架中的逻辑元素与对应的 DOM 节点。
  * 它提供注册、查找、销毁等基础操作。
  *
  * - elements: 存储逻辑层的元素对象
  * - doms: 存储元素 ID 与真实 DOM 节点的映射关系
  * - removed: 弱引用集合，用于追踪被删除的 DOM（不阻止 GC 回收）
  */
-export class DDManager<T extends { keys: { SK: string } }> {
+export class DDManager<T extends DDElementNode> {
 
   /** 存储逻辑元素对象（key 为唯一 ID） */
   public elements: Map<string, T> = new Map();
@@ -24,7 +26,7 @@ export class DDManager<T extends { keys: { SK: string } }> {
    * @param strict 是否在未找到时抛出异常（默认 true）
    * @returns [逻辑元素对象, 对应的 DOM 节点]
    */
-  public getElementWithDOM(id: string, strict: boolean = true): [any, HTMLElement] {
+  public getElementWithDOM(id: string, strict: boolean = true): [T, HTMLElement] {
     const element = this.elements.get(id);
     const dom = this.doms.get(id);
 
@@ -33,23 +35,6 @@ export class DDManager<T extends { keys: { SK: string } }> {
     }
 
     return [element!, dom!];
-  }
-
-  /**
-   * 根据元素 ID 获取其兄弟键（Sibling Key）。
-   * 若元素未注册，则抛出错误。
-   *
-   * @param id 元素的唯一标识符
-   * @returns 该元素的兄弟键（SK）
-   */
-  public getSiblingKey(id: string): string {
-    const element = this.elements.get(id);
-
-    if (!element) {
-      throw new Error(`DFlexDOMManager.getSiblingKey: Element with ID "${id}" is not registered.`);
-    }
-
-    return element.keys.SK;
   }
 
   /**

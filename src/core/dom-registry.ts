@@ -1,7 +1,5 @@
 import { type Depth, type ParentKey, type BranchKey, DOMKeygen } from "./dom-keygen"
 
-
-
 export class DOMRegistry<T> extends DOMKeygen<T> {
   private _siblingsCount!: Record<Depth, number>;
 
