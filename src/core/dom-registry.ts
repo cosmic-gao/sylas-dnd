@@ -1,7 +1,9 @@
 import { DOMKeygen } from "./dom-keygen"
 
-export class DOMRegistry extends DOMKeygen {
+export class DOMRegistry<T> extends DOMKeygen<T> {
   public constructor() {
     super()
   }
+
+  public register() { }
 }

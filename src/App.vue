@@ -16,7 +16,8 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { store, DnD } from "@dflex/dnd";
 
 // 响应式列表数据
-const items = ref(["🍎 Apple", "🍌 Banana", "🍒 Cherry", "🍇 Grape"]);
+// const items = ref(["🍎 Apple", "🍌 Banana", "🍒 Cherry", "🍇 Grape"]);
+const items = ref(["🍎 Apple"]);
 const containerRef = ref(null);
 let activeDnD:any = null;
 
