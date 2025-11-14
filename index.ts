@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 const zones = document.querySelectorAll('[dropzone="true"]');
+const el = document.getElementById('drag0')
 
 function getOverlapArea(target, source, offsetX = 0, offsetY = 0) {
   const tRect = target.getBoundingClientRect();
@@ -29,7 +30,24 @@ function getOverlapArea(target, source, offsetX = 0, offsetY = 0) {
 function chooseBestZone(element, offsetX = 0, offsetY = 0) {
   let intersections = [];
 
-  for (const zone of zones) {
+  const dragRect = el.getBoundingClientRect();
+  const corners = [
+    { x: dragRect.left + offsetX, y: dragRect.top + offsetY },
+    { x: dragRect.right + offsetX, y: dragRect.top + offsetY },
+    { x: dragRect.left + offsetX, y: dragRect.bottom + offsetY },
+    { x: dragRect.right + offsetX, y: dragRect.bottom + offsetY }
+  ];
+
+  const hitElements = Array.from(
+    new Set( // 去重
+      corners.flatMap(corner =>
+        document.elementsFromPoint(corner.x, corner.y)
+          .filter(el => el.getAttribute('dropzone') === 'true') // 过滤自身 & dropzone="true"
+      )
+    )
+  );
+
+  for (const zone of hitElements) {
     const area = getOverlapArea(element, zone, offsetX, offsetY);
     if (area > 0) {
       intersections.push({ zone, area });
@@ -66,9 +84,9 @@ function getHitElement(element, offsetX, offsetY) {
   return bestZone;
 }
 
-const el = document.getElementById('drag0')
 
 let startMouseX, startMouseY;
+
 
 el.addEventListener('dragstart', (e) => {
   e.dataTransfer.setData('text/plain', 'dragged');
