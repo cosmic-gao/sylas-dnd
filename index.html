@@ -8,6 +8,55 @@
 </head>
 
 <body>
+    <style>
+        :root {
+            --h: 210;
+            --s: 60%;
+        }
+
+        #drag0{
+            margin: 8px;
+            border-radius: 8px;
+            padding: 6px 12px;
+            width: 200px;
+            height: 30px;
+            background: hsl(var(--h), var(--s), 85%);
+        }
+
+        #layer0, #layer1, #layer2, #layer3, #layer4, #layer5 {
+            padding: 40px;
+            margin: 8px;
+            border-radius: 8px;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        #layer0 { background: hsl(var(--h), var(--s), 85%); }
+        #layer1 { background: hsl(var(--h), var(--s), 80%); }
+        #layer2 { background: hsl(var(--h), var(--s), 70%); }
+        #layer3 { background: hsl(var(--h), var(--s), 60%); }
+        #layer4 { background: hsl(var(--h), var(--s), 50%); }
+        #layer5 { background: hsl(var(--h), var(--s), 50%); }
+
+        .highlight{
+            background-color: rgba(255, 200, 0, 0.3) !important; /* 半透明黄色背景 */
+            border-color: #ffa500 !important; /* 橙色边框 */
+        }
+    </style>
+
+    <div id="drag0" draggable="true">Drag Element</div>
+
+    <div id="layer0" dropzone="true">
+        <div id="layer1" dropzone="true">
+            <div id="layer2" dropzone="true">
+                <div id="layer3" dropzone="true">
+                    <div id="layer4" dropzone="true"></div>
+                    <div id="layer5" dropzone="true"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="index.ts"></script>
 </body>
 
